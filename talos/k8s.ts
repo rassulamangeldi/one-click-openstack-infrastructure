@@ -114,7 +114,7 @@ export class K8S extends pulumi.ComponentResource {
                 gitRepository: {
                     spec: {
                         labels: { managedBy: "pulumi" },
-                        url: "https://github.com/rassulamangeldi/one-click-openstack-infra.git",
+                        url: "https://github.com/rassulamangeldi/one-click-openstack-infrastructure.git",
                         secretRef: { name: fluxRepoSecret.metadata.name },
                         interval: "1m0s",
                         timeout: "60s",

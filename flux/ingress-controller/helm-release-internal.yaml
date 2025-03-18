@@ -1,0 +1,69 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ingress-nginx-internal
+  namespace: ingress
+spec:
+  releaseName: ingress-nginx-internal
+  interval: 5m
+  chart:
+    spec:
+      chart: ingress-nginx
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        namespace: ingress
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  # Default values: https://github.com/kubernetes/ingress-nginx/blob/helm-chart-4.11.3/charts/ingress-nginx/values.yaml
+  values:
+
+    tcp:
+      "5432": "postgres/postgres-cluster-rw:5432"
+
+    controller:
+
+      ingressClassResource:
+        name: nginx-internal
+        enabled: true
+        default: false
+        controllerValue: "k8s.io/ingress-nginx-internal"
+      ingressClass: nginx-internal
+
+      config:
+        compute-full-forwarded-for: "true"
+        enable-real-ip: "true"
+        enable-brotli: "true"
+        log-format-escape-json: "true"
+        log-format-upstream: '{"time": "$time_iso8601", "remote_addr": "$remote_addr", "x_forward_for":
+          "$proxy_add_x_forwarded_for", "request_id": "$req_id", "remote_user": "$remote_user",
+          "bytes_sent": $bytes_sent, "request_time": $request_time, "status": $status, "vhost":
+          "$host", "request_proto": "$server_protocol", "path": "$uri", "proxy_upstream":
+          "$proxy_upstream_name", "request_query": "$args", "request_length": $request_length,
+          "duration": $request_time,"method": "$request_method", "http_referrer": "$http_referer",
+          "http_user_agent": "$http_user_agent" }'
+        use-forwarded-headers: "true"
+        allow-snippet-annotations: "true"
+        annotations-risk-level: "critical"
+
+      addHeaders:
+        X-XSS-Protection: "1; mode=block"
+        X-Frame-Options: "sameorigin"
+        X-Content-Type-Options: "nosniff"
+        Cache-control: "no-cache"
+
+      service:
+        type: NodePort
+        nodePorts:
+          http: "31080"
+          https: "31443"
+          tcp:
+            "5432": "31432"
+
+      metrics:
+        enabled: false
+

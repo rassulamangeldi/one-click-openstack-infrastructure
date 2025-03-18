@@ -11,3 +11,5 @@ config:
   openstack:password:
     secure: v1:AMfX0KTlv4lqrQON:A/ucdsxAEGsihJn0YQF4sSRapm5meiB1U2SRFuO7g/rbnR7f7zC1qco6+FChGUij
   openstack:userDomainName: Default
+  devopsdays:fluxGithubToken:
+    secure: v1:8Zq1D0Wd7hWZmawR:NS9RHL6ty7f6gRxrTkYjgEYY2L9C6aKOdJegbJFnKJboA5hwCG2b2gvE4ikaE9RDOdb1pDgNQFw=

@@ -81,14 +81,56 @@ export class K8S extends pulumi.ComponentResource {
             createNamespace: true
         }, { provider: kubernetesProvider, parent: this });
         
+        // Get GitHub token from Pulumi config
+        const fluxGithubToken = config.requireSecret("fluxGithubToken");
+
         /**
-         *  Kubernetes Secret with gitlab token (TODO)
+         * Create Kubernetes Secret for Flux GitHub authentication
          */
-        
+        const fluxRepoSecret = new k8s.core.v1.Secret("fluxRepoSecret", {
+            immutable: true,
+            type: "Opaque",
+            metadata: {
+                name: "flux-github-repo-creds",
+                namespace: "flux-system",
+                labels: { managedBy: "pulumi" }
+            },
+            stringData: {
+                password: fluxGithubToken,
+                username: "Z2l0"
+            }
+        }, { provider: kubernetesProvider });
+
         /**
-         *  Flux Sync Helm (TODO)
-         *   - GitRepository
-         *   - Kustomization
+         * Deploy Flux Sync Helm Chart for GitOps Repository Sync
          */
+        const fluxSyncHelmChart = new k8s.helm.v3.Release("fluxSyncHelmChart", {
+            chart: "flux2-sync",
+            version: "1.10.0",
+            namespace: "flux-system",
+            name: "flux-sync-github",
+            repositoryOpts: { repo: "https://fluxcd-community.github.io/helm-charts" },
+            values: {
+                gitRepository: {
+                    spec: {
+                        labels: { managedBy: "pulumi" },
+                        url: "https://github.com/rassulamangeldi/one-click-openstack-infra.git",
+                        secretRef: { name: fluxRepoSecret.metadata.name },
+                        interval: "1m0s",
+                        timeout: "60s",
+                        ref: { branch: "master" }
+                    }
+                },
+                kustomization: {
+                    spec: {
+                        labels: { managedBy: "pulumi" },
+                        force: false,
+                        interval: "10m0s",
+                        path: `./flux`,
+                        prune: true
+                    }
+                }
+            }
+        }, { dependsOn: fluxRepoSecret, provider: kubernetesProvider });
     }
 }

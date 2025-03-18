@@ -1,11 +1,11 @@
 
-export const baseVars        = { env: "dev", project: "mara", app: "talos-test" };
+export const baseVars        = { env: "test", project: "devopsdays", app: "talos" };
 export const resourceName    = `${baseVars.env}-${baseVars.project}-${baseVars.app}`;
 
-export const talosImage = "d29e279e-a72d-4e24-95c5-0c567ed667fe";
+export const talosImage = "98e15242-321d-4dbe-b3fd-4220723c1404";
 
 export const clusterName     = resourceName;
-export const controlPlaneVip = "10.128.10.221";
+export const controlPlaneVip = "10.129.1.221";
 export const clusterEndpoint = `https://${controlPlaneVip}:6443`;
 
 export const talosDefaultTemplate = `

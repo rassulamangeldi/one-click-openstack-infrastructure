@@ -6,4 +6,6 @@ metadata:
 spec:
   interval: 120m
   url: oci://ghcr.io/pulumi/helm-charts/pulumi-kubernetes-operator
+  ref:
+    tag: 2.0.0
   

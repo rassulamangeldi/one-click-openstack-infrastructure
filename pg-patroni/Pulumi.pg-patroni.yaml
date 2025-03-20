@@ -1,0 +1,20 @@
+config:
+  test-devopsdays:networkId:
+    secure: AAABAOVdBzIqniqGvmFbhmhnKSJGKHJZ94KJq3/P3OfBWaAuUhb5yd7KicmqQ+2lfNG0C0wLyS9J8GdzG5Du+3Blrt0=
+  test-devopsdays:privateSubnetId:
+    secure: AAABAJSC21Bdwbfxyoa06/PsLiNNNK1TGDgf42BZKVMQuXdtACN5nOe/H6t2MdbQgvZZcpPOtu3XJLVyjHyDr6hdRL8=
+  test-devopsdays:coreNetwork:
+    secure: AAABAIw2L8H6VKwSHhzQwrRHnpNjWca6g4kWXyUXaTLpN2hvJ9+vGNQASzAVP4E83YOqiOeUY+G2UTFBCJLcU/xH3hQ=
+  test-devopsdays:databaseSubnet:
+    secure: AAABADa0qzD2wEgXqOhvU1gJTKA0z9cMI8iXL7dl4CiIrwcURA3E4Z+Bfw7AnVFGSKFo881rjy6ecjWMpP2RiT+d2Uw=
+  openstack:authUrl: https://auth.pscloud.io/v3/
+  openstack:region: kz-ala-1
+  openstack:userName:
+    secure: AAABAF4Q3szyZGFaivV7meaDyHVakhd2otzSXAc0zrQ6nEF/JuRsoiZ80e/UpiYokTEtSQ==
+  openstack:password:
+    secure: AAABAO1jfw5rDnWYNzD6P+IjZnPhoVJOriDy77nVjOReV9KZn6qNs4QA7di4AWwyrpGbqxN3uBtuL9uYylsl2w==
+  openstack:userDomainName: Default
+  test-devopsdays:master_user:
+    secure: AAABACYR92x/DDWNVAFkeW4jsgJ+cII38ALmSUWzyiSsntT4Pnjc9A==
+  test-devopsdays:master_password:
+    secure: AAABAPPIYp6cLg0Oq+7GEIFOLQ+ezKdTIJ35P0/Q2tJkt8YW

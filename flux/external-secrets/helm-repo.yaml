@@ -1,8 +1,8 @@
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
-  name: ingress-nginx
-  namespace: ingress
+  name: external-secrets
+  namespace: external-secrets
 spec:
   interval: 120m
-  url: https://kubernetes.github.io/ingress-nginx
+  url: https://charts.external-secrets.io

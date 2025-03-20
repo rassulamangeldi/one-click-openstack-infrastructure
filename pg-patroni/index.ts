@@ -395,51 +395,51 @@ etcdNodes.forEach(vm => {
     });
 });
 
-const cfg = new pulumi.Config();
-const masterUser = cfg.require("master_user");
-const masterPassword = cfg.require("master_password");
+// const cfg = new pulumi.Config();
+// const masterUser = cfg.require("master_user");
+// const masterPassword = cfg.require("master_password");
 
-const testPostgreProvider = new postgresql.Provider("test-mycar-postgresql-v14.14", {
-	host: "10.129.2.70",
-	database: "postgres",
-	username: masterUser,
-	password: masterPassword,
-	port: 35432,
-	superuser: true,
-	sslmode: "disable",
-});
+// const testPostgreProvider = new postgresql.Provider("test-mycar-postgresql-v14.14", {
+// 	host: "10.129.2.70",
+// 	database: "postgres",
+// 	username: masterUser,
+// 	password: masterPassword,
+// 	port: 35432,
+// 	superuser: true,
+// 	sslmode: "disable",
+// });
 
-dbs.forEach(db => {
-	const roleName = db.name;
+// dbs.forEach(db => {
+// 	const roleName = db.name;
 
-	const dbRole = new postgresql.Role(roleName, {
-		name: roleName,
-		login: true,
-		skipReassignOwned: true,
-		encryptedPassword: true,
-		password: db.password,
-	}, { provider: testPostgreProvider });
+// 	const dbRole = new postgresql.Role(roleName, {
+// 		name: roleName,
+// 		login: true,
+// 		skipReassignOwned: true,
+// 		encryptedPassword: true,
+// 		password: db.password,
+// 	}, { provider: testPostgreProvider });
 
-	const database = new postgresql.Database(db.name, {
-		name: db.name,
-		allowConnections: true,
-		connectionLimit: -1,
-		lcCollate: "C",
-		owner: roleName,
-		template: "template0",
-	}, { provider: testPostgreProvider, dependsOn: [dbRole] });
+// 	const database = new postgresql.Database(db.name, {
+// 		name: db.name,
+// 		allowConnections: true,
+// 		connectionLimit: -1,
+// 		lcCollate: "C",
+// 		owner: roleName,
+// 		template: "template0",
+// 	}, { provider: testPostgreProvider, dependsOn: [dbRole] });
 
-	const chownPublicSchema = new postgresql.Schema(`${db.name}_public`, {
-		name: "public",
-		database: db.name,
-		owner: roleName,
-	}, { provider: testPostgreProvider, dependsOn: [database] });
+// 	const chownPublicSchema = new postgresql.Schema(`${db.name}_public`, {
+// 		name: "public",
+// 		database: db.name,
+// 		owner: roleName,
+// 	}, { provider: testPostgreProvider, dependsOn: [database] });
 
-	new postgresql.Grant(`${db.name}_revoke_public`, {
-		database: db.name,
-		objectType: "schema",
-		privileges: [],
-		role: "public",
-		schema: "public",
-	}, { provider: testPostgreProvider, dependsOn: [chownPublicSchema] });
-});
+// 	new postgresql.Grant(`${db.name}_revoke_public`, {
+// 		database: db.name,
+// 		objectType: "schema",
+// 		privileges: [],
+// 		role: "public",
+// 		schema: "public",
+// 	}, { provider: testPostgreProvider, dependsOn: [chownPublicSchema] });
+// });

@@ -4,7 +4,7 @@ metadata:
   name: pg-patroni-stack
   namespace: pulumi-kubernetes-operator
 spec:
-  stack: test-devopsdays/pg-patroni
+  stack: rassul_amangeldi/pg-patroni
   projectRepo: https://github.com/rassulamangeldi/one-click-openstack-infrastructure.git
   branch: master
   repoDir: pg-patroni/

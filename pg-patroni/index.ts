@@ -3,11 +3,6 @@ import * as openstack from "@pulumi/openstack";
 import * as postgresql from "@pulumi/postgresql";
 import { dbs } from "./dbs";
 
-// const networkStack = new pulumi.StackReference("stage-mycar-core-network");
-// const coreRouter = networkStack.getOutput("core_router");
-// const coreNetwork = networkStack.getOutput("core_network");
-// const databaseSubnet = networkStack.getOutput("database_subnet");
-
 const config = new pulumi.Config();
 const network = config.requireSecret("networkId");
 const privateSubnet = config.requireSecret("privateSubnetId");
@@ -404,7 +399,7 @@ const cfg = new pulumi.Config();
 const masterUser = cfg.require("master_user");
 const masterPassword = cfg.require("master_password");
 
-const stagePostgreProvider = new postgresql.Provider("stage-mycar-postgresql-v14.14", {
+const testPostgreProvider = new postgresql.Provider("test-mycar-postgresql-v14.14", {
 	host: "10.129.2.60",
 	database: "postgres",
 	username: masterUser,
@@ -423,7 +418,7 @@ dbs.forEach(db => {
 		skipReassignOwned: true,
 		encryptedPassword: true,
 		password: db.password,
-	}, { provider: stagePostgreProvider });
+	}, { provider: testPostgreProvider });
 
 	const database = new postgresql.Database(db.name, {
 		name: db.name,
@@ -432,13 +427,13 @@ dbs.forEach(db => {
 		lcCollate: "C",
 		owner: roleName,
 		template: "template0",
-	}, { provider: stagePostgreProvider, dependsOn: [dbRole] });
+	}, { provider: testPostgreProvider, dependsOn: [dbRole] });
 
 	const chownPublicSchema = new postgresql.Schema(`${db.name}_public`, {
 		name: "public",
 		database: db.name,
 		owner: roleName,
-	}, { provider: stagePostgreProvider, dependsOn: [database] });
+	}, { provider: testPostgreProvider, dependsOn: [database] });
 
 	new postgresql.Grant(`${db.name}_revoke_public`, {
 		database: db.name,
@@ -446,5 +441,5 @@ dbs.forEach(db => {
 		privileges: [],
 		role: "public",
 		schema: "public",
-	}, { provider: stagePostgreProvider, dependsOn: [chownPublicSchema] });
+	}, { provider: testPostgreProvider, dependsOn: [chownPublicSchema] });
 });

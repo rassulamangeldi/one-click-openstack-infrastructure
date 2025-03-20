@@ -10,8 +10,8 @@ const masterNodes = [
 ];
 
 const workerNodes = [
-    { name: `${vars.resourceName}-worker-01`, ip: "10.129.1.224" },
-    { name: `${vars.resourceName}-worker-02`, ip: "10.129.1.225" },
+    { name: `${vars.resourceName}-worker-01`, ip: "10.129.1.222" },
+    { name: `${vars.resourceName}-worker-02`, ip: "10.129.1.223" },
 ];
 
 const config = new pulumi.Config();

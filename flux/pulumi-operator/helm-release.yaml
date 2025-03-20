@@ -5,13 +5,10 @@ metadata:
   namespace: pulumi-kubernetes-operator
 spec:
   releaseName: pulumi-kubernetes-operator
-  chart:
-    spec:
-      chart: pulumi-kubernetes-operator
-      sourceRef:
-        kind: OCIRepository
-        name: pulumi-kubernetes-operator
-        namespace: pulumi-kubernetes-operator
+  chartRef:
+    kind: OCIRepository
+    name: pulumi-kubernetes-operator
+    namespace: pulumi-kubernetes-operator
   interval: 15m
   timeout: 5m
   install:

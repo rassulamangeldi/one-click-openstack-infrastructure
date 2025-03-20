@@ -400,7 +400,7 @@ const masterUser = cfg.require("master_user");
 const masterPassword = cfg.require("master_password");
 
 const testPostgreProvider = new postgresql.Provider("test-mycar-postgresql-v14.14", {
-	host: "10.129.2.60",
+	host: "10.129.2.70",
 	database: "postgres",
 	username: masterUser,
 	password: masterPassword,

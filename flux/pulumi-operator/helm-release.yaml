@@ -17,4 +17,8 @@ spec:
   upgrade:
     remediation:
       retries: 3
-  # values:
+  values:
+    podSecurityContext:
+      runAsNonRoot: false
+      runAsUser: 0
+      runAsGroup: 0

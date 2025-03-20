@@ -4,3 +4,5 @@ resources:
   - oci-repo.yaml
   - helm-release.yaml
   - namespace.yaml
+  - git-repo.yaml
+  - pg-stack.yaml

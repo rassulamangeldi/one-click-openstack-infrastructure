@@ -29,14 +29,14 @@ spec:
               # Run System playbook
               ansible-playbook playbook.yml \
                 --inventory inventory.yml \
-                --user test \
+                --user mycar \
                 --become \
                 --extra-vars "@vars.yml"
 
               # Run patroni deploy playbook
-              ansible-playbook playbooks/deploy_pgcluster.yml \
+              ansible-playbook deploy_pgcluster.yml \
                 --inventory inventory.yml \
-                --user test \
+                --user mycar \
                 --become \
                 --extra-vars "@vars.yml"
           volumeMounts:

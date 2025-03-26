@@ -30,7 +30,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: ansible-ssh-key
-                  key: id_rsa
+                  key: privateKey
           volumeMounts:
             - name: ansible-data
               mountPath: /ansible

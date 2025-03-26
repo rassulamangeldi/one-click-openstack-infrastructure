@@ -15,9 +15,6 @@
     - role: ntp
       tags: ntp
 
-    - role: alloy
-      tags: grafana
-
 - hosts: postgres_cluster
   become: true
   roles:

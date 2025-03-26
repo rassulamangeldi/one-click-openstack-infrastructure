@@ -13,5 +13,5 @@ configMapGenerator:
       - playbook.yml
       - vars.yml
       - requirements.yml
-      - playbooks/deploy_pgcluster.yml
-      - playbooks/config_pgcluster.yml
+      # - playbooks/deploy_pgcluster.yml
+      # - playbooks/config_pgcluster.yml

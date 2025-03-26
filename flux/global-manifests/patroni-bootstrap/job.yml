@@ -10,16 +10,19 @@ spec:
       restartPolicy: Never
       containers:
         - name: ansible-bootstrap
-          image: okassov/ansible:2.13-ubuntu
+          image: okassov/ansible:v2.10.7
           command: ["/bin/bash", "-c"]
           args:
             - |
               mkdir -p ~/.ssh
               echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
+              mkdir -p /tmp/roles /tmp/collections
+              export ANSIBLE_ROLES_PATH=/tmp/roles
+              export ANSIBLE_COLLECTIONS_PATHS=/tmp/collections
               cd /ansible
-              ansible-galaxy role install -r requirements.yml -p roles/
-              ansible-galaxy collection install -r requirements.yml -p collections/
+              ansible-galaxy role install -r requirements.yml -p /tmp/roles
+              ansible-galaxy collection install -r requirements.yml -p /tmp/collections
               ansible-playbook playbooks/deploy_pgcluster.yml \
                 --inventory inventory.yml \
                 --user mycar \

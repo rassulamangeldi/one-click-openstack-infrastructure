@@ -147,3 +147,4 @@ sysctl_conf:
 
 # etc_hosts: ['10.129.51.7 prometheus.mycar.kz']
 
+# trigger reconcile

@@ -34,7 +34,7 @@ spec:
                 --extra-vars "@vars.yml"
 
               # Run patroni deploy playbook
-              ansible-playbook deploy_pgcluster.yml \
+              ansible-playbook playbooks/deploy_pgcluster.yml \
                 --inventory inventory.yml \
                 --user test \
                 --become \

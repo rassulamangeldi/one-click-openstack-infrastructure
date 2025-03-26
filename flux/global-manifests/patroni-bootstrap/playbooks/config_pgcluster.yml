@@ -1,5 +1,5 @@
 ---
-- name: config_pgcluster.yml | Configuration PostgreSQL HA Cluster (based on "Patroni")
+- name: Deploy PostgreSQL HA Cluster (based on "Patroni")
   hosts: localhost
   gather_facts: true
   any_errors_fatal: true
@@ -22,75 +22,55 @@
   roles:
     - role: cloud-resources
       when: cloud_provider | default('') | length > 0
-      vars:
-        postgresql_cluster_maintenance: true
       tags: always
 
-- name: config_pgcluster.yml | Check the PostgreSQL cluster state and perform pre-checks
-  hosts: postgres_cluster
+- name: deploy_pgcluster.yml | Perform pre-checks
+  hosts: all
   become: true
   become_method: sudo
   gather_facts: true
+  any_errors_fatal: true
+  environment: "{{ proxy_env | default({}) }}"
+
   pre_tasks:
     - name: Include main variables
       ansible.builtin.include_vars: "vars/main.yml"
+      tags: always
 
     - name: Include system variables
       ansible.builtin.include_vars: "vars/system.yml"
+      tags: always
 
     - name: Include OS-specific variables
       ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
+      tags: always
 
-    - name: '[Prepare] Set maintenance variable'
-      ansible.builtin.set_fact:
-        postgresql_cluster_maintenance: true
-
-    - name: '[Prepare] Get Patroni Cluster Leader Node'
-      ansible.builtin.uri:
-        url: http://{{ inventory_hostname }}:{{ patroni_restapi_port }}/leader
-        status_code: 200
-      register: patroni_leader_result
-      changed_when: false
-      failed_when: false
-      check_mode: false
-      environment:
-        no_proxy: "{{ inventory_hostname }}"
-
-    # Stop, if Patroni is unavailable
-    - name: The Patroni cluster is unhealthy
-      ansible.builtin.fail:
-        msg: "Patroni is unavailable on {{ ansible_hostname }}. Please check the cluster status."
-      changed_when: false
-      when: patroni_leader_result is undefined or patroni_leader_result.status == -1
-
-    - name: '[Prepare] Add host to group "primary" (in-memory inventory)'
-      ansible.builtin.add_host:
-        name: "{{ item }}"
-        groups: primary
-        is_master: true
-        postgresql_exists: true
-      when: hostvars[item]['patroni_leader_result']['status'] == 200
-      loop: "{{ groups['postgres_cluster'] }}"
-      changed_when: false
-      check_mode: false
-
-    - name: '[Prepare] Add hosts to group "secondary" (in-memory inventory)'
-      ansible.builtin.add_host:
-        name: "{{ item }}"
-        groups: secondary
-        is_master: false
-        postgresql_exists: true
-      when: hostvars[item]['patroni_leader_result']['status'] != 200
-      loop: "{{ groups['postgres_cluster'] }}"
-      changed_when: false
-      check_mode: false
-
-    - name: "Print Patroni Cluster info"
+    - name: System info
       ansible.builtin.debug:
         msg:
-          - "Cluster Name: {{ patroni_cluster_name }}"
-          - "Cluster Leader: {{ ansible_hostname }}"
-      when: inventory_hostname in groups['primary']
+          server_name: "{{ hostname | default(ansible_hostname) }}"
+          server_location: "{{ server_location | default(omit) }}"
+          ip_address: "{{ inventory_hostname | default('N/A') }}"
+          os: "{{ ansible_distribution | default('N/A') }} {{ ansible_distribution_version | default('N/A') }}"
+          kernel: "{{ ansible_kernel | default('N/A') }}"
+          cpu:
+            model: "{{ ansible_processor[2] | default('N/A') }}"
+            count: "{{ ansible_processor_count | default('N/A') }}"
+            cores: "{{ ansible_processor_cores | default('N/A') }}"
+          memory: "{{ (ansible_memtotal_mb / 1024) | round(2) if ansible_memtotal_mb is defined else 'N/A' }} GB"
+          disk_space_total: >-
+            {{
+              (ansible_mounts
+                | map(attribute='size_total')
+                | map('int')
+                | sum / 1024 / 1024 / 1024
+              )
+              | round(2) if ansible_mounts is defined else 'N/A'
+            }} GB
+          architecture: "{{ ansible_architecture | default('N/A') }}"
+          virtualization_type: "{{ ansible_virtualization_type | default('N/A') }}"
+          product_name: "{{ ansible_product_name | default('N/A') }}"
+      tags: always
 
     # if 'cloud_provider' is 'aws', 'gcp', or 'azure'
     # set_fact: 'pgbackrest_install' to configure Postgres backups (TODO: Add the ability to configure backups in the UI)
@@ -104,23 +84,142 @@
       tags: always
 
   roles:
+    # (optional) if 'ssh_public_keys' is defined
+    - role: authorized-keys
+      tags: ssh_public_keys
+
     - role: pre-checks
       vars:
         minimal_ansible_version: 2.15.0
         timescale_minimal_pg_version: 12 # if enable_timescale is defined
-  tags:
-    - always
+      tags: always
 
-- name: config_pgcluster.yml | Configure PostgreSQL Cluster
-  hosts: 'primary:secondary'
+  tasks:
+    - name: Clean dnf cache
+      ansible.builtin.command: dnf clean all
+      when:
+        - ansible_os_family == "RedHat"
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      register: apt_status
+      until: apt_status is success
+      delay: 5
+      retries: 3
+      when: ansible_os_family == "Debian"
+
+    - name: Make sure the gnupg and apt-transport-https packages are present
+      ansible.builtin.apt:
+        pkg:
+          - gnupg
+          - apt-transport-https
+        state: present
+      register: apt_status
+      until: apt_status is success
+      delay: 5
+      retries: 3
+      when: ansible_os_family == "Debian"
+
+    # Ansible requires the iproute package for network facts to be populated
+    - name: Make sure that the iproute is installed
+      ansible.builtin.package:
+        name: iproute
+        state: present
+      register: package_status
+      until: package_status is success
+      delay: 5
+      retries: 3
+      when: ansible_os_family == "RedHat"
+
+    - name: Make sure that the iproute is installed
+      ansible.builtin.apt:
+        name: iproute2
+        state: present
+      register: apt_status
+      until: apt_status is success
+      delay: 5
+      retries: 3
+      when: ansible_os_family == "Debian"
+
+    # (optional) Command or script to be executed before the Postgres cluster deployment.
+    - block:
+        - name: Print pre-deploy command
+          ansible.builtin.debug:
+            var: pre_deploy_command
+          when: pre_deploy_command_print | default(false) | bool
+
+        - name: Run pre-deploy command
+          ansible.builtin.shell: "{{ pre_deploy_command }} > /tmp/pre_deploy_command.log 2>&1"
+          args:
+            executable: /bin/bash
+          register: pre_deploy_result
+          delegate_to: "{{ item }}"
+          loop: "{{ pre_deploy_command_hosts.split(',') | map('extract', groups) | list | flatten }}"
+          async: "{{ pre_deploy_command_timeout }}"  # run the command asynchronously
+          poll: 0
+
+        - name: Wait for the pre-deploy command to complete
+          ansible.builtin.async_status:
+            jid: "{{ item.ansible_job_id }}"
+          register: pre_deploy_job_result
+          delegate_to: "{{ item.item }}"
+          loop: "{{ pre_deploy_result.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+          until: pre_deploy_job_result.finished
+          retries: "{{ (pre_deploy_command_timeout | int) // 10 }}"
+          delay: 10
+          ignore_errors: true # allows to collect logs before stopping execution (in case of failure)
+          when:
+            - pre_deploy_result.results is defined
+            - item.ansible_job_id is defined
+
+        - name: Get pre-deploy command log
+          ansible.builtin.command: cat /tmp/pre_deploy_command.log
+          register: pre_deploy_command_log
+          delegate_to: "{{ item }}"
+          loop: "{{ pre_deploy_command_hosts.split(',') | map('extract', groups) | list | flatten }}"
+          changed_when: false
+          when: pre_deploy_command_print_result | default(false) | bool
+
+        - name: Print pre-deploy command result
+          ansible.builtin.debug:
+            msg: "{{ item.stdout_lines }}"
+          loop: "{{ pre_deploy_command_log.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+          when:
+            - pre_deploy_command_log.results is defined
+            - item.stdout_lines is defined
+
+        - name: Stop if pre-deploy command failed
+          ansible.builtin.fail:
+            msg: "Pre-deploy command failed. See log for details."
+          when: pre_deploy_job_result.results | json_query('[?failed]') | length > 0
+      run_once: true # noqa run-once
+      when: pre_deploy_command | default('') | length > 0
+      tags: pre_deploy, pre_deploy_command
+
+- name: deploy_pgcluster.yml | Deploy etcd cluster
+  ansible.builtin.import_playbook: etcd_cluster.yml
+  when: not dcs_exists|bool and dcs_type == "etcd"
+  tags: etcd
+
+- name: deploy_pgcluster.yml | Deploy Consul
+  ansible.builtin.import_playbook: consul.yml
+  when: dcs_type == "consul"
+  tags: consul
+
+- name: deploy_pgcluster.yml | Postgres Cluster Configuration
+  hosts: postgres_cluster
   become: true
   become_method: sudo
   gather_facts: true
   any_errors_fatal: true
   environment: "{{ proxy_env | default({}) }}"
-  handlers:
-    - ansible.builtin.import_tasks: ../collections/ansible_collections/postgresql/cluster/roles/patroni/handlers/main.yml
-    - ansible.builtin.import_tasks: ../collections/ansible_collections/postgresql/cluster/roles/pgbouncer/handlers/main.yml
+
   pre_tasks:
     - name: Include main variables
       ansible.builtin.include_vars: "vars/main.yml"
@@ -139,7 +238,7 @@
         firewall_ports_dynamic_var: "{{ firewall_ports_dynamic_var | default([]) + (firewall_allowed_tcp_ports_for[item] | default([])) }}"
       loop: "{{ hostvars[inventory_hostname].group_names }}"
       when: firewall_enabled_at_boot | bool
-      tags: config_firewall, firewall
+      tags: firewall
 
     - name: Build a firewall_rules_dynamic_var
       ansible.builtin.set_fact:
@@ -159,58 +258,39 @@
       vars:
         firewall_allowed_tcp_ports: "{{ firewall_ports_dynamic_var | default([]) | unique }}"
         firewall_additional_rules: "{{ firewall_rules_dynamic_var | default([]) | unique }}"
-      when: firewall_enabled_at_boot | bool
+      when: firewall_enabled_at_boot|bool
       tags: firewall
 
     - role: hostname
     - role: resolv_conf
     - role: etc_hosts
-    - role: timezone
     - role: add-repository
     - role: packages
     - role: sudo
+    - role: mount
     - role: swap
     - role: sysctl
     - role: transparent_huge_pages
     - role: pam_limits
     - role: io-scheduler
     - role: locales
+    - role: timezone
     - role: ntp
     - role: ssh-keys
     - role: copy
-    - role: pgpass
-    - role: cron
 
-    - role: patroni/config
+- name: deploy_pgcluster.yml | Deploy balancers
+  ansible.builtin.import_playbook: balancers.yml
+  when: with_haproxy_load_balancing|bool
+  tags: load_balancing, haproxy
 
-    - role: pgbouncer/config
-      when: pgbouncer_install | bool
-
-    - role: vip-manager
-      when: not with_haproxy_load_balancing | bool and
-        (cluster_vip is defined and cluster_vip | length > 0)
-
-    - role: postgresql-users
-      when: inventory_hostname in groups['primary']
-
-    - role: postgresql-databases
-      when: inventory_hostname in groups['primary']
-
-    - role: postgresql-schemas
-      when: inventory_hostname in groups['primary']
-
-    - role: postgresql-extensions
-      when: inventory_hostname in groups['primary']
-
-    - role: wal-g
-      when: wal_g_install | bool
-
-- name: config_pgcluster | Configure pgBackRest
+- name: deploy_pgcluster.yml | Install and configure pgBackRest
   hosts: pgbackrest:postgres_cluster
   become: true
   become_method: sudo
   gather_facts: true
   any_errors_fatal: true
+
   pre_tasks:
     - name: Include main variables
       ansible.builtin.include_vars: "vars/main.yml"
@@ -234,122 +314,15 @@
     - role: pgbackrest
       when: pgbackrest_install | bool
 
-- name: config_pgcluster.yml | Restart patroni on secondary after config settings if need
-  hosts: secondary
-  serial: 1 # restart replicas one by one
-  gather_facts: false
-  become: true
-  become_method: sudo
-  any_errors_fatal: true
-  pre_tasks:
-    - name: Include main variables
-      ansible.builtin.include_vars: "vars/main.yml"
-      tags: always
-
-    - name: Include OS-specific variables
-      ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
-      tags: always
-
-  tasks:
-    - name: Stop read-only traffic
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: stop_traffic
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-
-    - name: Stop Services
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: stop_services
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-
-    - name: Start Services
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: start_services
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-
-    - name: Start read-only traffic
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: start_traffic
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-  tags:
-    - patroni_conf
-
-- name: config_pgcluster.yml | Restart patroni on master after config settings if need
-  hosts: primary
-  gather_facts: false
-  become: true
-  become_method: sudo
-  any_errors_fatal: true
-  environment: "{{ proxy_env | default({}) }}"
-  pre_tasks:
-    - name: Include main variables
-      ansible.builtin.include_vars: "vars/main.yml"
-      tags: always
-
-    - name: Include OS-specific variables
-      ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
-      tags: always
-
-  tasks:
-    - name: Switchover Patroni leader role
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: switchover
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-
-    - name: Stop read-only traffic
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: stop_traffic
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-
-    - name: Stop Services
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: stop_services
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-
-    - name: Start Services
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: start_services
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-
-    - name: Start read-only traffic
-      ansible.builtin.include_role:
-        name: update
-        tasks_from: start_traffic
-      when:
-        - pending_restart | bool
-        - pg_pending_restart_settings | length > 0
-  tags:
-    - patroni_conf
-
-- name: config_pgcluster.yml | PostgreSQL Cluster Info
-  hosts: primary
+- name: deploy_pgcluster.yml | PostgreSQL Cluster Deployment
+  hosts: postgres_cluster
   become: true
   become_method: sudo
   gather_facts: true
   any_errors_fatal: true
+  handlers:
+    - ansible.builtin.import_tasks: ../collections/ansible_collections/postgresql/cluster/roles/pgbouncer/handlers/main.yml
+
   pre_tasks:
     - name: Include main variables
       ansible.builtin.include_vars: "vars/main.yml"
@@ -362,6 +335,121 @@
     - name: Include OS-specific variables
       ansible.builtin.include_vars: "vars/{{ ansible_os_family }}.yml"
       tags: always
+
+    # if 'cloud_provider' is 'aws', 'gcp', or 'azure'
+    # set_fact: 'pgbackrest_install' to configure Postgres backups (TODO: Add the ability to configure backups in the UI)
+    - name: "Set variable: 'pgbackrest_install' to configure Postgres backups"
+      ansible.builtin.set_fact:
+        pgbackrest_install: true
+      when:
+        - not (pgbackrest_install | bool or wal_g_install | bool)
+        - cloud_provider | default('') | lower in ['aws', 'gcp', 'azure']
+        - pgbackrest_auto_conf | default(true) | bool  # to be able to disable auto backup settings
+      tags: always
+
   roles:
+    - role: wal-g
+      when: wal_g_install|bool
+
+    - role: pg_probackup
+      when: pg_probackup_install|bool
+
+    - role: cron
+
+    - role: pgbouncer
+      when: pgbouncer_install|bool
+
+    - role: pgpass
+
+    - role: patroni
+
+    - role: pgbackrest/stanza-create
+      when: pgbackrest_install | bool
+
+    - role: vip-manager
+      when: not with_haproxy_load_balancing|bool and
+        (cluster_vip is defined and cluster_vip | length > 0)
+
+    # optional
+    - role: postgresql-users
+      when: is_master | bool and postgresql_users | length > 0
+
+    - role: postgresql-databases
+      when: is_master | bool and postgresql_databases | length > 0
+
+    - role: postgresql-schemas
+      when: is_master | bool and postgresql_schemas | length > 0
+
+    - role: postgresql-extensions
+      when: is_master | bool and postgresql_extensions | length > 0
+
+    - role: pgbouncer/config
+      when: pgbouncer_install|bool
+
+    - role: netdata
+      when: netdata_install is defined and netdata_install|bool
+
     # finish (info)
     - role: deploy-finish
+
+  tasks:
+    # (optional) Command or script to be executed after the Postgres cluster deployment.
+    - block:
+        - name: Print post-deploy command
+          ansible.builtin.debug:
+            var: post_deploy_command
+          when: post_deploy_command_print | default(false) | bool
+
+        - name: Run post-deploy command
+          ansible.builtin.shell: "{{ post_deploy_command }} > /tmp/post_deploy_command.log 2>&1"
+          args:
+            executable: /bin/bash
+          register: post_deploy_result
+          delegate_to: "{{ item }}"
+          loop: "{{ post_deploy_command_hosts.split(',') | map('extract', groups) | list | flatten }}"
+          async: "{{ post_deploy_command_timeout }}"  # run the command asynchronously
+          poll: 0
+
+        - name: Wait for the post-deploy command to complete
+          ansible.builtin.async_status:
+            jid: "{{ item.ansible_job_id }}"
+          register: post_deploy_job_result
+          delegate_to: "{{ item.item }}"
+          loop: "{{ post_deploy_result.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+          until: post_deploy_job_result.finished
+          retries: "{{ (post_deploy_command_timeout | int) // 10 }}"
+          delay: 10
+          ignore_errors: true # allows to collect logs before stopping execution (in case of failure)
+          when:
+            - post_deploy_result.results is defined
+            - item.ansible_job_id is defined
+
+        - name: Get post-deploy command log
+          ansible.builtin.command: cat /tmp/post_deploy_command.log
+          register: post_deploy_command_log
+          delegate_to: "{{ item }}"
+          loop: "{{ post_deploy_command_hosts.split(',') | map('extract', groups) | list | flatten }}"
+          changed_when: false
+          when: post_deploy_command_print_result | default(false) | bool
+
+        - name: Print post-deploy command result
+          ansible.builtin.debug:
+            msg: "{{ item.stdout_lines }}"
+          loop: "{{ post_deploy_command_log.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+          when:
+            - post_deploy_command_log.results is defined
+            - item.stdout_lines is defined
+
+        - name: Stop if post-deploy command failed
+          ansible.builtin.fail:
+            msg: "Post-deploy command failed. See log for details."
+          when: post_deploy_job_result.results | json_query('[?failed]') | length > 0
+      run_once: true # noqa run-once
+      when: post_deploy_command | default('') | length > 0
+      tags: post_deploy, post_deploy_command
+
+...

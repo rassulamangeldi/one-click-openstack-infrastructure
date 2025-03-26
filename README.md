@@ -29,3 +29,5 @@ subjects:
 EOF
 ```
 However, I guess it's possible to update it using helm values. Need to check
+
+- If there is an issue with Ansible playbook, you should first delete the failed k8s job. No workaround

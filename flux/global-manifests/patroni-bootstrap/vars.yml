@@ -24,8 +24,8 @@ postgresql_port: 5432
 postgresql_password_encryption_algorithm: "md5"
 
 postgresql_users:
-  - { name: "{{ pgbouncer_auth_username }}", password: "{{ pgbouncer_auth_password }}", flags: "LOGIN", role: "" }
-  - { name: "{{ monitoring_auth_username }}", password: "{{ monitoring_auth_password }}", flags: "LOGIN", role: "pg_monitor" }
+  # - { name: "{{ pgbouncer_auth_username }}", password: "{{ pgbouncer_auth_password }}", flags: "LOGIN", role: "" }
+  # - { name: "{{ monitoring_auth_username }}", password: "{{ monitoring_auth_password }}", flags: "LOGIN", role: "pg_monitor" }
 
 postgresql_extensions:
   - { ext: "pg_stat_statements", db: "" }

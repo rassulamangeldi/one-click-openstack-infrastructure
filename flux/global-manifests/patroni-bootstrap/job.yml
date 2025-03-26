@@ -31,9 +31,9 @@ spec:
                 ansible-galaxy collection install -r /ansible/requirements.yml
 
               echo "==== Debug Installed Roles ===="
-              ls -lR /tmp/ansible/roles
+              ls -l /tmp/ansible/roles
               echo "==== Debug Installed Collections ===="
-              ls -lR /tmp/ansible/collections
+              ls -l /tmp/ansible/collections
 
               # Run the playbooks with custom paths
               ANSIBLE_ROLES_PATH=/tmp/ansible/roles \

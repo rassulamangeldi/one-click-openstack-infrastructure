@@ -19,25 +19,35 @@ spec:
               chmod 600 ~/.ssh/id_rsa
               ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
 
-              # Change to working dir with the files
               cd /ansible
 
-              # Install roles and collections into default paths
-              ansible-galaxy role install -r requirements.yml
-              ansible-galaxy collection install -r requirements.yml
+              # Install roles into /ansible/roles
+              ansible-galaxy role install -r requirements-roles.yml --roles-path /ansible/roles
 
+              # Install collections into /ansible/collections
+              mkdir -p /ansible/collections
+              ANSIBLE_COLLECTIONS_PATHS=/ansible/collections \
+                ansible-galaxy collection install -r requirements-collections.yml
+
+              # Debug check
+              echo "======= /ansible ======="
               ls -la /ansible
-              ls -la /root/.ansible/collections/ansible_collections/postgresql/cluster/roles/
+              echo "======= /ansible/roles ======="
+              ls -la /ansible/roles
+              echo "======= /ansible/collections ======="
+              find /ansible/collections -type d -name "roles"
 
               # Run System playbook
-              ansible-playbook playbook.yml \
+              ANSIBLE_COLLECTIONS_PATHS=/ansible/collections \
+                ansible-playbook playbook.yml \
                 --inventory inventory.yml \
                 --user mycar \
                 --become \
                 --extra-vars "@vars.yml"
 
-              # Run patroni deploy playbook
-              ansible-playbook deploy_pgcluster.yml \
+              # Run deploy playbook
+              ANSIBLE_COLLECTIONS_PATHS=/ansible/collections \
+                ansible-playbook deploy_pgcluster.yml \
                 --inventory inventory.yml \
                 --user mycar \
                 --become \

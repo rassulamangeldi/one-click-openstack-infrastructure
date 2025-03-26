@@ -8,15 +8,6 @@
         name: "{{ ntp_timezone }}"
       tags:
         - ntp
-    - name: "postgres-exporter | Upload queries config file"
-      copy:
-        src: "playbooks/files/postgres-exporter.yaml"
-        dest: "{{ postgres_exporter_config_dest }}"
-        owner: root
-        group: root
-        mode: 0644
-      tags:
-        - grafana
   roles:
     - role: manage-lvm
       tags: lvm

@@ -19,39 +19,38 @@ spec:
               chmod 600 ~/.ssh/id_rsa
               ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
 
-              cd /ansible
+              # Create writable locations
+              mkdir -p /tmp/ansible/roles
+              mkdir -p /tmp/ansible/collections
 
-              # Install roles into /ansible/roles
-              ansible-galaxy role install -r requirements-roles.yml --roles-path /ansible/roles
+              echo "==== Install Ansible Roles ===="
+              ansible-galaxy role install -r /ansible/requirements.yml --roles-path /tmp/ansible/roles
 
-              # Install collections into /ansible/collections
-              mkdir -p /ansible/collections
-              ANSIBLE_COLLECTIONS_PATHS=/ansible/collections \
-                ansible-galaxy collection install -r requirements-collections.yml
+              echo "==== Install Ansible Collections ===="
+              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
+                ansible-galaxy collection install -r /ansible/requirements.yml
 
-              # Debug check
-              echo "======= /ansible ======="
-              ls -la /ansible
-              echo "======= /ansible/roles ======="
-              ls -la /ansible/roles
-              echo "======= /ansible/collections ======="
-              find /ansible/collections -type d -name "roles"
+              echo "==== Debug Installed Roles ===="
+              ls -lR /tmp/ansible/roles
+              echo "==== Debug Installed Collections ===="
+              ls -lR /tmp/ansible/collections
 
-              # Run System playbook
-              ANSIBLE_COLLECTIONS_PATHS=/ansible/collections \
-                ansible-playbook playbook.yml \
-                --inventory inventory.yml \
+              # Run the playbooks with custom paths
+              ANSIBLE_ROLES_PATH=/tmp/ansible/roles \
+              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
+                ansible-playbook /ansible/playbook.yml \
+                --inventory /ansible/inventory.yml \
                 --user mycar \
                 --become \
-                --extra-vars "@vars.yml"
+                --extra-vars "@/ansible/vars.yml"
 
-              # Run deploy playbook
-              ANSIBLE_COLLECTIONS_PATHS=/ansible/collections \
-                ansible-playbook deploy_pgcluster.yml \
-                --inventory inventory.yml \
+              ANSIBLE_ROLES_PATH=/tmp/ansible/roles \
+              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
+                ansible-playbook /ansible/deploy_pgcluster.yml \
+                --inventory /ansible/inventory.yml \
                 --user mycar \
                 --become \
-                --extra-vars "@vars.yml"
+                --extra-vars "@/ansible/vars.yml"
           volumeMounts:
             - name: ansible-data
               mountPath: /ansible

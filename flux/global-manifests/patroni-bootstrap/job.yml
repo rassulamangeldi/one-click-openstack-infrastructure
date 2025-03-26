@@ -12,26 +12,26 @@ spec:
         - name: ansible-bootstrap
           image: okassov/ansible:2.13-ubuntu
           command: ["/bin/bash", "-c"]
-      args:
-        - |
-          mkdir -p ~/.ssh
-          cp /secrets/id_rsa ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
+          args:
+            - |
+              mkdir -p ~/.ssh
+              cp /secrets/id_rsa ~/.ssh/id_rsa
+              chmod 600 ~/.ssh/id_rsa
+              ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
 
-          # Change to working dir with the files
-          cd /ansible
+              # Change to working dir with the files
+              cd /ansible
 
-          # Install roles and collections into default paths
-          ansible-galaxy role install -r requirements.yml
-          ansible-galaxy collection install -r requirements.yml
+              # Install roles and collections into default paths
+              ansible-galaxy role install -r requirements.yml
+              ansible-galaxy collection install -r requirements.yml
 
-          # Run playbook
-          ansible-playbook playbooks/deploy_pgcluster.yml \
-            --inventory inventory.yml \
-            --user mycar \
-            --become \
-            --extra-vars "@vars.yml"
+              # Run playbook
+              ansible-playbook playbooks/deploy_pgcluster.yml \
+                --inventory inventory.yml \
+                --user mycar \
+                --become \
+                --extra-vars "@vars.yml"
           volumeMounts:
             - name: ansible-data
               mountPath: /ansible
@@ -45,4 +45,3 @@ spec:
         - name: gitlab-ssh
           secret:
             secretName: gitlab-ssh-key
-

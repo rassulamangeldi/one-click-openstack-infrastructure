@@ -38,3 +38,4 @@ spec:
         - name: ansible-data
           configMap:
             name: ansible-patroni-data
+            

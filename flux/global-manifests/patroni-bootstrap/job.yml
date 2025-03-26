@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: ansible-bootstrap
-          image: ghcr.io/cjsteel/ansible:latest
+          image: willhallonline/ansible:latest
           command: ["/bin/bash", "-c"]
           args:
             - |

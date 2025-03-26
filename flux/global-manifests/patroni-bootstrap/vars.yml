@@ -145,6 +145,4 @@ sysctl_conf:
     - { name: "net.core.somaxconn", value: "65535" }
     - { name: "net.ipv4.tcp_tw_reuse", value: "1" }
 
-# etc_hosts: ['10.129.51.7 prometheus.mycar.kz']
 
-# trigger reconcile

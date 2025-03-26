@@ -31,6 +31,8 @@
   become: true
   become_method: sudo
   gather_facts: true
+  collections:
+    - postgresql.cluster
   any_errors_fatal: true
   environment: "{{ proxy_env | default({}) }}"
 
@@ -374,21 +376,33 @@
 
     # optional
     - role: postgresql-users
+      collections:
+        - postgresql.cluster
       when: is_master | bool and postgresql_users | length > 0
 
     - role: postgresql-databases
+      collections:
+        - postgresql.cluster
       when: is_master | bool and postgresql_databases | length > 0
 
     - role: postgresql-schemas
+      collections:
+        - postgresql.cluster
       when: is_master | bool and postgresql_schemas | length > 0
 
     - role: postgresql-extensions
+      collections:
+        - postgresql.cluster
       when: is_master | bool and postgresql_extensions | length > 0
 
     - role: pgbouncer/config
+      collections:
+        - postgresql.cluster
       when: pgbouncer_install|bool
 
     - role: netdata
+      collections:
+        - postgresql.cluster
       when: netdata_install is defined and netdata_install|bool
 
     # finish (info)

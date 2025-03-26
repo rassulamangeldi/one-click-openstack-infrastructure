@@ -6,7 +6,8 @@ resources:
   - job.yml
 
 configMapGenerator:
-  - name: ansible-files
+  - name: ansible-patroni-data
+    namespace: flux-system
     files:
       - inventory.yml
       - playbook.yml

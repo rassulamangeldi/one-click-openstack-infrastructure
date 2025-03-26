@@ -17,14 +17,14 @@ spec:
               mkdir -p ~/.ssh
               echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
+              cd /ansible
               ansible-galaxy role install -r requirements.yml -p roles/
               ansible-galaxy collection install -r requirements.yml -p collections/
               ansible-playbook playbooks/deploy_pgcluster.yml \
                 --inventory inventory.yml \
                 --user mycar \
                 --become \
-                --extra-vars "@vars.yml" \
-                --vault-password-file /secrets/vault_password
+                --extra-vars "@vars.yml"
           env:
             - name: SSH_PRIVATE_KEY
               valueFrom:
@@ -34,13 +34,7 @@ spec:
           volumeMounts:
             - name: ansible-data
               mountPath: /ansible
-            - name: vault-password
-              mountPath: /secrets
-              readOnly: true
       volumes:
         - name: ansible-data
           configMap:
             name: ansible-patroni-data
-        - name: vault-password
-          secret:
-            secretName: ansible-vault-pass

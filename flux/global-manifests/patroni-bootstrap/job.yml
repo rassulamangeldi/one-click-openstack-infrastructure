@@ -26,6 +26,9 @@ spec:
               ansible-galaxy role install -r requirements.yml
               ansible-galaxy collection install -r requirements.yml
 
+              ls -la /ansible
+              ls -la /root/.ansible/collections/ansible_collections/postgresql/cluster/roles/
+
               # Run System playbook
               ansible-playbook playbook.yml \
                 --inventory inventory.yml \

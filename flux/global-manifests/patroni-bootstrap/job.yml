@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: ansible-bootstrap
-          image: willhallonline/ansible:latest
+          image: okassov/ansible:latest
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -38,4 +38,4 @@ spec:
         - name: ansible-data
           configMap:
             name: ansible-patroni-data
-            
+

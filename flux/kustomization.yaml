@@ -4,4 +4,4 @@ resources:
   - ingress-controller
   - external-secrets
   - pulumi-operator
-  - global-manifests
+  - global-manifests/patroni-bootstrap

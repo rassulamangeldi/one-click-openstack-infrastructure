@@ -4,7 +4,7 @@
   gather_facts: true
   any_errors_fatal: true
   collections:
-    - postgresql.cluste
+    - postgresql.cluster
   pre_tasks:
     - name: Include main variables
       ansible.builtin.include_vars: "vars/main.yml"

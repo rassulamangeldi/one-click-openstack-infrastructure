@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: ansible-bootstrap
-          image: willhallonline/ansible:2.15-ubuntu-24.04
+          image: ppikta/ansible:2.18-ubuntu-24.04
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -60,19 +60,19 @@ spec:
               cd /tmp/ansible
 
               # Uncomment one of these to execute
-              # ansible-playbook playbook.yml \
-              #   -i inventory.yml \
-              #   --user mycar \
-              #   --become \
-              #   -e "@/tmp/ansible/vars.yml" \
-              #   --private-key=~/.ssh/patroni-ssh.pem
+              ansible-playbook playbook.yml \
+                -i inventory.yml \
+                --user mycar \
+                --become \
+                -e "@/tmp/ansible/vars.yml" \
+                --private-key=~/.ssh/patroni-ssh.pem
 
-              # ansible-playbook playbooks/deploy_pgcluster.yml \
-              #   -i inventory.yml \
-              #   --user mycar \
-              #   --become \
-              #   -e "@/tmp/ansible/vars.yml" \
-              #   --private-key=~/.ssh/patroni-ssh.pem
+              ansible-playbook playbooks/deploy_pgcluster.yml \
+                -i inventory.yml \
+                --user mycar \
+                --become \
+                -e "@/tmp/ansible/vars.yml" \
+                --private-key=~/.ssh/patroni-ssh.pem
 
               echo "==== Ready to debug in the pod shell ===="
               sleep infinity

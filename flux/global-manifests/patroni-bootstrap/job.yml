@@ -30,7 +30,7 @@ spec:
               echo "==== Installing collections ===="
               ansible-galaxy collection install -r requirements.yml
 
-              cp -r /.ansible/collections /ansible
+              cp -r ~/.ansible/collections /ansible
 
               ansible-playbook playbooks/config_pgcluster.yml \
                 -i inventory.yml \

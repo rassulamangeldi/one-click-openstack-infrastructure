@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: ansible-bootstrap
-          image: okassov/ansible:2.13-ubuntu
+          image: willhallonline/ansible:2.15-ubuntu-24.04
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -58,12 +58,12 @@ spec:
               #   -e "@/tmp/ansible/vars.yml" \
               #   --private-key=~/.ssh/patroni-ssh.pem
 
-              # ansible-playbook playbooks/deploy_pgcluster.yml \
-              #   -i inventory.yml \
-              #   --user mycar \
-              #   --become \
-              #   -e "@/tmp/ansible/vars.yml" \
-              #   --private-key=~/.ssh/patroni-ssh.
+              ansible-playbook playbooks/deploy_pgcluster.yml \
+                -i inventory.yml \
+                --user mycar \
+                --become \
+                -e "@/tmp/ansible/vars.yml" \
+                --private-key=~/.ssh/patroni-ssh.
               
               sleep infinity
           volumeMounts:

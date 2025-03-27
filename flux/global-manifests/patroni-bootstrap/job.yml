@@ -16,8 +16,9 @@ spec:
             - |
               # SSH keys
               mkdir -p ~/.ssh
-              cp /secrets-ansible/patroni.pem ~/.ssh/id_rsa
+              cp /secrets-gitlab/id_rsa ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
+              ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
 
               cp /secrets-ansible/patroni.pem ~/.ssh/patroni-ssh.pem
               chmod 600 ~/.ssh/patroni-ssh.pem

@@ -19,17 +19,11 @@ spec:
               chmod 600 ~/.ssh/id_rsa
               ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
 
-              # Create writable locations
-              mkdir -p /tmp/ansible/roles
-              mkdir -p /tmp/ansible/collections
-
-              export ANSIBLE_COLLECTIONS_PATHS="/tmp/ansible/collections:/root/.ansible/collections:/usr/share/ansible/collections"
-
               echo "==== Install Ansible Roles ===="
-              ansible-galaxy role install -r /ansible/requirements.yml --roles-path /tmp/ansible/roles
+              ansible-galaxy role install -r ansible/requirements.yml --roles-path /ansible/roles
 
               echo "==== Install Ansible Collections ===="
-              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
+              ANSIBLE_COLLECTIONS_PATHS=/ansible/collections \
                 ansible-galaxy collection install -r /ansible/requirements.yml
 
               echo "==== Debug Installed Roles ===="
@@ -38,7 +32,7 @@ spec:
               ls -l /tmp/ansible/collections
 
               # Run the playbooks with custom paths
-              ANSIBLE_ROLES_PATH=/tmp/ansible/roles \
+              ANSIBLE_ROLES_PATH=/ansible/roles \
               ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
                 ansible-playbook /ansible/playbook.yml \
                 --inventory /ansible/inventory.yml \
@@ -46,7 +40,7 @@ spec:
                 --become \
                 --extra-vars "@/ansible/vars.yml"
 
-              ANSIBLE_ROLES_PATH=/tmp/ansible/roles \
+              ANSIBLE_ROLES_PATH=/ansible/roles \
               ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
                 ansible-playbook /ansible/deploy_pgcluster.yml \
                 --inventory /ansible/inventory.yml \

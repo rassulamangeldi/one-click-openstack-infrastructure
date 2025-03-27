@@ -74,3 +74,9 @@ spec:
         - name: gitlab-ssh
           secret:
             secretName: gitlab-ssh-key
+        - name: ansible-ssh
+          secret:
+            secretName: ansible-ssh-key
+            items:
+              - key: privateKey
+

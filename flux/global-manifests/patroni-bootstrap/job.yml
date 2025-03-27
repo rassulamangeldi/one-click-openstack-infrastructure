@@ -30,12 +30,14 @@ spec:
               echo "==== Installing collections ===="
               ansible-galaxy collection install -r requirements.yml
 
-              # ansible-playbook playbooks/config_pgcluster.yml \
-              #   -i inventory.yml \
-              #   --user mycar \
-              #   --become \
-              #   -e "@/tmp/ansible/vars.yml" \
-              #   --private-key=~/.ssh/patroni-ssh.pem
+              cp -r /.ansible/collections /ansible
+
+              ansible-playbook playbooks/config_pgcluster.yml \
+                -i inventory.yml \
+                --user mycar \
+                --become \
+                -e "@vars.yml" \
+                --private-key=~/.ssh/patroni-ssh.pem
 
               echo "==== Ready to debug in the pod shell ===="
               sleep infinity

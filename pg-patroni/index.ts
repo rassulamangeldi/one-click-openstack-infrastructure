@@ -25,13 +25,13 @@ users:
     - name: mycar
       lock_passwd: false
       shell: /bin/bash
-      passwd: $6$rounds=4096$/leE0G5uziQ19nF7$2nZX2q7HJ8MB443UiVUPV5YlRXd6SSppEATUMPlGfn7Rog4u0De3icwyskjl/k0HdNK4x7gGoqSnQGGTjBKtC/ #test
+      passwd: $6$rounds=4096$/leE0G5uziQ19nF7$2nZX2q7HJ8MB443UiVUPV5YlRXd6SSppEATUMPlGfn7Rog4u0De3icwyskjl/k0HdNK4x7gGoqSnQGGTjBKtC/
       sudo: ['ALL=(ALL) NOPASSWD:ALL']
       ssh_authorized_keys:
          - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC1bS0S7A/ttdbyFDq8vmRybNPNp9UQ/zyH5oUS6N2FYhQMJ12+MNhWli2OL/NI2Gxz+G29Gn8Inyzy5PuZlQFu95bMbYtKx/yTGi+rVGoxxET+WDLcNz7Pr+jCerwQox4SJk7xuKsjt73cnSc3ZoAy4HxudKgCdsm3/D9xmvNiaxfmKl+BmhKvuJdr2LuSXldhh0VDhlGDOw8kDl+8tkeszdR7rtdUmFsDiB517f2kcQDcMK0hwMyGS/ck1D+fBcuYmLXWH3EhRe1S5rjc6aE5Fyx9jEb+zkh/f41StiL9YvsVG36SlZOiiXPsxxLH82j5k6d3VSUFW5BEJh+IiVmUdHmOkPVCDp2aCgv1sa/vWb24yO9xEnpye8LtXBdPaP+rqM5g1b3b2tWOzOa8WY3WmBE1fdIGLISuNXKm6nkHRk/6Rq2zxmro8ONcOKpso5Eo/hkJHkDhr4lPmS/g+rUQ6PgrIb36eXaBD3GMQvisnf+yNNdk6Vc2J+Jxh2oSQJsGI6lqhu16R5uot2BPS32tMl/UrEgi7UQDnfXETXMNqdhz+BGWMcCKEwDin48LPreMyzJl+NZEGQMK6tINzVMzLOGgHa9vRgEoYWrtg5hZzNbPU3cU7udPTuSuH2mSCvIDptcLw2K8CEGBFDUjlRTyOQp53odVfl//NJjk/HqKDw=="
     - name: root
       shell: /bin/bash
-      passwd: $6$rounds=4096$/leE0G5uziQ19nF7$2nZX2q7HJ8MB443UiVUPV5YlRXd6SSppEATUMPlGfn7Rog4u0De3icwyskjl/k0HdNK4x7gGoqSnQGGTjBKtC/ #test
+      passwd: $6$rounds=4096$/leE0G5uziQ19nF7$2nZX2q7HJ8MB443UiVUPV5YlRXd6SSppEATUMPlGfn7Rog4u0De3icwyskjl/k0HdNK4x7gGoqSnQGGTjBKtC/
       lock_passwd: false
 
 repo_update: true

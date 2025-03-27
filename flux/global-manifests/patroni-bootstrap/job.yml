@@ -58,6 +58,13 @@ spec:
               #   -e "@/tmp/ansible/vars.yml" \
               #   --private-key=~/.ssh/patroni-ssh.pem
 
+              # ansible-playbook playbooks/deploy_pgcluster.yml \
+              #   -i inventory.yml \
+              #   --user mycar \
+              #   --become \
+              #   -e "@/tmp/ansible/vars.yml" \
+              #   --private-key=~/.ssh/patroni-ssh.
+              
               sleep infinity
           volumeMounts:
             - name: ansible-data

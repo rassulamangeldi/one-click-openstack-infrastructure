@@ -14,3 +14,4 @@ configMapGenerator:
       - vars.yml
       - requirements.yml
       - playbooks.tgz
+      - ansible.cfg

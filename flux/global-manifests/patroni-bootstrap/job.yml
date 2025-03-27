@@ -15,58 +15,57 @@ spec:
           args:
             - |
               mkdir -p ~/.ssh
-              cp /secrets/id_rsa ~/.ssh/id_rsa
+
+              # GitLab SSH key for fetching code 
+              cp /secrets-gitlab/id_rsa ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
               ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
 
-              # Create writable locations
+              # Patroni SSH key for connecting to VMs
+              cp /secrets-ansible/patroni.pem ~/.ssh/patroni-ssh.pem
+              chmod 600 ~/.ssh/patroni-ssh.pem
+
+              for ip in 10.129.2.71 10.129.2.72 10.129.2.73 10.129.2.74 10.129.2.75 10.129.2.76; do
+                ssh-keyscan "$ip" >> ~/.ssh/known_hosts
+              done
+
+              # Prepare Ansible directories
               mkdir -p /tmp/ansible/roles
               mkdir -p /tmp/ansible/collections
-
-              echo "==== Extracting playbooks ===="
-              tar xzf /ansible/playbooks.tgz -C /tmp/ansible
-
-              ls -l /tmp/ansible/playbooks
-            
               export ANSIBLE_CONFIG=/tmp/ansible/ansible.cfg
               export ANSIBLE_COLLECTIONS_PATHS="/tmp/ansible/collections:/root/.ansible/collections:/usr/share/ansible/collections"
 
-              echo "==== Install Ansible Roles ===="
+              echo "==== Installing roles ===="
               ansible-galaxy role install -r /ansible/requirements.yml --roles-path /tmp/ansible/roles
 
-              echo "==== Install Ansible Collections ===="
+              echo "==== Installing collections ===="
               ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
                 ansible-galaxy collection install -r /ansible/requirements.yml
 
-              echo "==== Debug Installed Roles ===="
-              ls -l /tmp/ansible/roles
-              echo "==== Debug Installed Collections ===="
-              ls -l /tmp/ansible/collections
+              echo "==== Copying collection roles ===="
+              cp -r /tmp/ansible/collections/ansible_collections/postgresql/cluster/roles/* /tmp/ansible/roles/
 
-              # Run the playbooks with custom paths
-              ANSIBLE_ROLES_PATH=/tmp/ansible/roles \
-              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
-                ansible-playbook /ansible/playbook.yml \
-                --inventory /ansible/inventory.yml \
-                --user mycar \
-                --become \
-                --extra-vars "@/ansible/vars.yml"
+              echo "==== Extracting playbooks ===="
+              tar --no-xattrs --no-same-owner --no-same-permissions -xzf /ansible/playbooks.tgz -C /tmp
 
-              # ANSIBLE_ROLES_PATH=/tmp/ansible/roles \
-              # ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
-              #   ansible-playbook /ansible/deploy_pgcluster.yml \
-              #   --inventory /ansible/inventory.yml \
+              echo "==== Running Ansible ===="
+              cd /tmp/ansible
+              # ansible-playbook playbook.yml \
+              #   -i inventory.yml \
               #   --user mycar \
               #   --become \
-              #   --extra-vars "@/ansible/vars.yml"
+              #   -e "@/tmp/ansible/vars.yml" \
+              #   --private-key=~/.ssh/patroni-ssh.pem
 
-              echo "Pod is ready. Sleeping for debugging..."
               sleep infinity
           volumeMounts:
             - name: ansible-data
               mountPath: /ansible
             - name: gitlab-ssh
-              mountPath: /secrets
+              mountPath: /secrets-gitlab
+              readOnly: true
+            - name: ansible-ssh
+              mountPath: /secrets-ansible
               readOnly: true
       volumes:
         - name: ansible-data

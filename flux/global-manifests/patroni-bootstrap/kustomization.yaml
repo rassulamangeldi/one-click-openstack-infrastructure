@@ -13,4 +13,4 @@ configMapGenerator:
       - playbook.yml
       - vars.yml
       - requirements.yml
-      - playbooks
+      - playbooks.tgz

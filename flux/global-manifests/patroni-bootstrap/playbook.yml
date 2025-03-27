@@ -2,18 +2,18 @@
 
 - hosts: all
   become: true
-  pre_tasks:
-    - name: 'ntp | Set Timezone'
-      timezone:
-        name: "{{ ntp_timezone }}"
-      tags:
-        - ntp
+  # pre_tasks:
+  #   - name: 'ntp | Set Timezone'
+  #     timezone:
+  #       name: "{{ ntp_timezone }}"
+  #     tags:
+  #       - ntp
   roles:
     - role: manage-lvm
       tags: lvm
 
-    - role: ntp
-      tags: ntp
+    # - role: ntp
+    #   tags: ntp
 
 - hosts: postgres_cluster
   become: true

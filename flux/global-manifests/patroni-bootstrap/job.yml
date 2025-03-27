@@ -43,10 +43,11 @@ spec:
                 ansible-galaxy collection install -r /ansible/requirements.yml
 
               echo "==== Copying collection roles ===="
-              cp -r /tmp/ansible/collections/ansible_collections/postgresql/cluster/roles/* /tmp/ansible/roles/
+              cp -rL /ansible/* /tmp/ansible
+              cp -rL /tmp/ansible/collections/ansible_collections/postgresql/cluster/roles/* /tmp/ansible/roles/
 
               echo "==== Extracting playbooks ===="
-              tar --no-xattrs --no-same-owner --no-same-permissions -xzf /ansible/playbooks.tgz -C /tmp
+              tar --no-xattrs --no-same-owner --no-same-permissions -xzf /ansible/playbooks.tgz -C /tmp/ansible
 
               echo "==== Running Ansible ===="
               cd /tmp/ansible

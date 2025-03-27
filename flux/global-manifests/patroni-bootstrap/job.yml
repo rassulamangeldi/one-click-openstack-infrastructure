@@ -23,6 +23,8 @@ spec:
               mkdir -p /tmp/ansible/roles
               mkdir -p /tmp/ansible/collections
 
+              export ANSIBLE_COLLECTIONS_PATHS="/tmp/ansible/collections:/root/.ansible/collections:/usr/share/ansible/collections"
+
               echo "==== Install Ansible Roles ===="
               ansible-galaxy role install -r /ansible/requirements.yml --roles-path /tmp/ansible/roles
 

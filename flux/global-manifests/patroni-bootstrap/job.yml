@@ -53,6 +53,9 @@ spec:
               #   --user mycar \
               #   --become \
               #   --extra-vars "@/ansible/vars.yml"
+
+              echo "Pod is ready. Sleeping for debugging..."
+              sleep infinity
           volumeMounts:
             - name: ansible-data
               mountPath: /ansible

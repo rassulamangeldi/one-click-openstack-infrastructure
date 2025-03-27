@@ -14,43 +14,52 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
+              # === SSH Configuration ===
               mkdir -p ~/.ssh
 
-              # GitLab SSH key for fetching code 
+              # GitLab SSH key for fetching code
               cp /secrets-gitlab/id_rsa ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
               ssh-keyscan gitlab.mycar.kz >> ~/.ssh/known_hosts
 
-              # Patroni SSH key for connecting to VMs
+              # Patroni SSH key for Ansible access to VMs
               cp /secrets-ansible/patroni.pem ~/.ssh/patroni-ssh.pem
               chmod 600 ~/.ssh/patroni-ssh.pem
 
+              # Add VM IPs to known_hosts
               for ip in 10.129.2.71 10.129.2.72 10.129.2.73 10.129.2.74 10.129.2.75 10.129.2.76; do
                 ssh-keyscan "$ip" >> ~/.ssh/known_hosts
               done
 
-              # Prepare Ansible directories
+              # === Ansible Directory Setup ===
               mkdir -p /tmp/ansible/roles
               mkdir -p /tmp/ansible/collections
+              cp -rL /ansible/* /tmp/ansible
+
+              # Extract playbooks from tarball
+              tar --no-xattrs --no-same-owner --no-same-permissions \
+                -xzf /tmp/ansible/playbooks.tgz -C /tmp/ansible
+
+              # Copy collection roles into Ansible roles path
+              cp -rL /tmp/ansible/collections/ansible_collections/postgresql/cluster/roles/* \
+                /tmp/ansible/roles/
+
+              # === Ansible Environment Setup ===
               export ANSIBLE_CONFIG=/tmp/ansible/ansible.cfg
               export ANSIBLE_COLLECTIONS_PATHS="/tmp/ansible/collections:/root/.ansible/collections:/usr/share/ansible/collections"
 
+              # Install roles and collections
               echo "==== Installing roles ===="
-              ansible-galaxy role install -r /ansible/requirements.yml --roles-path /tmp/ansible/roles
+              ansible-galaxy role install -r /tmp/ansible/requirements.yml --roles-path /tmp/ansible/roles
 
               echo "==== Installing collections ===="
-              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
-                ansible-galaxy collection install -r /ansible/requirements.yml
+              ansible-galaxy collection install -r /tmp/ansible/requirements.yml \
+                --collections-path /tmp/ansible/collections
 
-              echo "==== Copying collection roles ===="
-              cp -rL /ansible/* /tmp/ansible
-              cp -rL /tmp/ansible/collections/ansible_collections/postgresql/cluster/roles/* /tmp/ansible/roles/
-
-              echo "==== Extracting playbooks ===="
-              tar --no-xattrs --no-same-owner --no-same-permissions -xzf /ansible/playbooks.tgz -C /tmp/ansible
-
-              echo "==== Running Ansible ===="
+              # === Run Ansible ===
               cd /tmp/ansible
+
+              # Uncomment one of these to execute
               # ansible-playbook playbook.yml \
               #   -i inventory.yml \
               #   --user mycar \
@@ -58,13 +67,14 @@ spec:
               #   -e "@/tmp/ansible/vars.yml" \
               #   --private-key=~/.ssh/patroni-ssh.pem
 
-              ansible-playbook playbooks/deploy_pgcluster.yml \
-                -i inventory.yml \
-                --user mycar \
-                --become \
-                -e "@/tmp/ansible/vars.yml" \
-                --private-key=~/.ssh/patroni-ssh.
-              
+              # ansible-playbook playbooks/deploy_pgcluster.yml \
+              #   -i inventory.yml \
+              #   --user mycar \
+              #   --become \
+              #   -e "@/tmp/ansible/vars.yml" \
+              #   --private-key=~/.ssh/patroni-ssh.pem
+
+              echo "==== Ready to debug in the pod shell ===="
               sleep infinity
           volumeMounts:
             - name: ansible-data

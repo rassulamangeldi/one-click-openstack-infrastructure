@@ -63,10 +63,10 @@ spec:
               mountPath: /ansible
             - name: gitlab-ssh
               mountPath: /secrets-gitlab
-              readOnly: true
+              readOnly: false
             - name: ansible-ssh
               mountPath: /secrets-ansible
-              readOnly: true
+              readOnly: false
       volumes:
         - name: ansible-data
           configMap:
@@ -79,4 +79,5 @@ spec:
             secretName: ansible-ssh-key
             items:
               - key: privateKey
+                path: patroni.pem
 

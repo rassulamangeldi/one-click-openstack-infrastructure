@@ -32,21 +32,21 @@ spec:
               ls -l /tmp/ansible/collections
 
               # Run the playbooks with custom paths
-              ANSIBLE_ROLES_PATH=/ansible/roles \
-              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
-                ansible-playbook /ansible/playbook.yml \
-                --inventory /ansible/inventory.yml \
-                --user mycar \
-                --become \
-                --extra-vars "@/ansible/vars.yml"
+              # ANSIBLE_ROLES_PATH=/ansible/roles \
+              # ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
+              #   ansible-playbook /ansible/playbook.yml \
+              #   --inventory /ansible/inventory.yml \
+              #   --user mycar \
+              #   --become \
+              #   --extra-vars "@/ansible/vars.yml"
 
-              ANSIBLE_ROLES_PATH=/ansible/roles \
-              ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
-                ansible-playbook /ansible/deploy_pgcluster.yml \
-                --inventory /ansible/inventory.yml \
-                --user mycar \
-                --become \
-                --extra-vars "@/ansible/vars.yml"
+              # ANSIBLE_ROLES_PATH=/ansible/roles \
+              # ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible/collections \
+              #   ansible-playbook /ansible/deploy_pgcluster.yml \
+              #   --inventory /ansible/inventory.yml \
+              #   --user mycar \
+              #   --become \
+              #   --extra-vars "@/ansible/vars.yml"
           volumeMounts:
             - name: ansible-data
               mountPath: /ansible

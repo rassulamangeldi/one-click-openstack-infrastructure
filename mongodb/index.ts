@@ -59,7 +59,7 @@ const mongoNodes = [
         volume_type: "ceph-ssd",
     },
     {
-        Name: `${resourceName}-2`,
+        Name: `${resourceName}-3`,
         private_ip: "10.129.2.79",
         key: sshKeyName,
         image: imageId,

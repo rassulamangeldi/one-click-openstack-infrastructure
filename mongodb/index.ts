@@ -46,7 +46,7 @@ const mongoNodes = [
         key: sshKeyName,
         image: imageId,
         flavor: "d1.ram4cpu2",
-        volume_root: 50,
+        volume_root: 10,
         volume_type: "ceph-ssd",
     },
     {
@@ -55,7 +55,16 @@ const mongoNodes = [
         key: sshKeyName,
         image: imageId,
         flavor: "d1.ram4cpu2",
-        volume_root: 50,
+        volume_root: 10,
+        volume_type: "ceph-ssd",
+    },
+    {
+        Name: `${resourceName}-2`,
+        private_ip: "10.129.2.79",
+        key: sshKeyName,
+        image: imageId,
+        flavor: "d1.ram4cpu2",
+        volume_root: 10,
         volume_type: "ceph-ssd",
     },
 ];

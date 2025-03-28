@@ -21,7 +21,7 @@ spec:
 apiVersion: pulumi.com/v1
 kind: Stack
 metadata:
-  name: pg-patroni-stack
+  name: mongodb-stack
   namespace: pulumi-kubernetes-operator
 spec:
   stack: rassul_amangeldi/mongodb

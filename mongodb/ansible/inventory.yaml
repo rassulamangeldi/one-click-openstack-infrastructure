@@ -1,0 +1,15 @@
+all:
+  hosts:
+    test-mycar-mongodb-1:
+      ansible_host: 10.129.2.77
+      mongo_replication_role: "primary"
+    test-mycar-mongodb-2:
+      ansible_host: 10.129.2.78
+      mongo_replication_role: "secondary"
+    test-mycar-mongodb-3:
+      ansible_host: 10.129.2.79
+      mongo_replication_role: "secondary"
+  vars:
+    ansible_connection: ssh
+    ansible_user: mycar
+    ansible_ssh_private_key_file: "~/.ssh/test.pem"

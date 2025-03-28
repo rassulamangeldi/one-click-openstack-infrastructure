@@ -1,0 +1,35 @@
+- hosts: all
+  become: true
+  roles:
+      - { role: community.mongodb.mongodb_repository, mongodb_version: "6.0" }
+      - { role: community.mongodb.mongodb_mongod, mongod_port: 27017 }
+
+  tasks:
+
+    - name: Initialise MongoDB Replicaset rs0
+      community.mongodb.mongodb_replicaset:
+        login_database: "admin"
+        login_host: localhost
+        replica_set: "rs0"
+        members:
+          - "10.129.2.21"
+          - "10.129.2.22"
+          - "10.129.2.23"
+      when: ansible_hostname == "test-mycar-mongodb-1"
+      register: repl
+
+    - name: Ensure replicaset has reached a converged state
+      community.mongodb.mongodb_status:
+        replica_set: "rs0"
+        poll: 10
+        interval: 10
+      when: repl.changed == True
+
+    - name: Import mongodb_auth role
+      include_role:
+        name: community.mongodb.mongodb_auth
+      vars:
+        authorization: "enabled"
+        mongod_host: "127.0.0.1"
+        mongodb_admin_pwd: "test"
+      when: ansible_hostname == "test-mycar-mongodb-1"

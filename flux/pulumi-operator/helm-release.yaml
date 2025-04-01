@@ -22,3 +22,18 @@ spec:
       runAsNonRoot: false
       runAsUser: 0
       runAsGroup: 0
+    rbac:
+      create: true
+      createClusterRole: true
+      createRole: false
+      createClusterAggregationRoles: true
+      extraRules:
+        - apiGroups: [""]
+          resources: ["pods/exec", "pods/log"]
+          verbs: ["get", "list"]
+        - apiGroups: ["authentication.k8s.io"]
+          resources: ["tokenreviews"]
+          verbs: ["create"]
+        - apiGroups: ["authorization.k8s.io"]
+          resources: ["subjectaccessreviews"]
+          verbs: ["create"]

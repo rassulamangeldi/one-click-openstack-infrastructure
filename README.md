@@ -31,3 +31,5 @@ EOF
 However, I guess it's possible to update it using helm values. Need to check
 
 - If there is an issue with Ansible playbook, you should first delete the failed k8s job. No workaround
+
+- Preconfigured docker image (reqs, vars, inventory, playbook) is used for Patroni ansible job. Can be done normally, if time allows to

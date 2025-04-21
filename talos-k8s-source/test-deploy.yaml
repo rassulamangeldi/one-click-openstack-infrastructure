@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-role-test
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: monitoring-role-test
+  template:
+    metadata:
+      labels:
+        app: monitoring-role-test
+    spec:
+      nodeSelector:
+        role: monitoring
+      tolerations:
+      - key: "role"
+        operator: "Equal"
+        value: "monitoring"
+        effect: "NoSchedule"
+      containers:
+      - name: nginx
+        image: nginx:1.25
+        ports:
+        - containerPort: 80

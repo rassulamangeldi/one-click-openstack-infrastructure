@@ -1,0 +1,18 @@
+config:
+  openstack:authUrl: https://auth.pscloud.io/v3/
+  openstack:region: kz-ala-1
+  openstack:userDomainName: Default
+  openstack:userName:
+    secure: AAABAMTROEMvV0NVoVqJLrZv7vLXiQmnY9mJV4l+RknsMe+dYYa/gQLeJG795SpPFMbrNw==
+  test-devopsdays:coreNetwork:
+    secure: AAABAMAjiyzH+dpK9cmccCs3E2cFPgj6ISw6StWDFIgfm2F+PUXxIkDdeYXJDReQUjDq6ljJj7M8F+Enowzl+JKzYck=
+  test-devopsdays:databaseSubnet:
+    secure: AAABAHHr/7bWs7c4AYjtsJoo9a+S4NHXyaR/jTA9fobJkuQYcqMvDJoJgZ4panJF4z2GA+0riGlQDMqI+7ZBCkNMWQQ=
+  test-devopsdays:networkId:
+    secure: AAABAKiY1xHxpV0GM6cNIUYG1Ru6VpLR/qIzeoIPEIbIl9xdzMFrlyUO2MCUrceJqKbYn16/5JPDfvBDKnCf3aMPTjg=
+  test-devopsdays:privateSubnetId:
+    secure: AAABAOD6bUq0DR6bmF/Up5SLb5tY7y2Q0KeJ6yI+A2vHuNjrUtbXvawfdUMj1gRGq+GuEKQ/MEfA9QZbGqCb6oTuukg=
+  openstack:password:
+    secure: AAABAADGLxxjJVQ2F6l8lhcGzgkkG7ejqv97p0LRI7YtPoDWJb7GKsq7do1g5c3MXV/BQEaqep8uTgAZPOEMCA==
+  test-devopsdays:fluxGithubToken:
+    secure: AAABAMuBC8lhIAksSLgr4ETIGo7YnqALOUO+/BmqpRK7p/Ce+src4GmhBG4VKLVFhD5IoPqUr4DTTOyDaifc+0AZ/wG7YOVa

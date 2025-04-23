@@ -5,4 +5,4 @@ resources:
   - external-secrets
   # - pulumi-operator
   # - global-manifests/patroni-bootstrap
-  - test-cm
+  - test_cm

@@ -3,6 +3,4 @@ kind: Kustomization
 resources:
   - ingress-controller
   - external-secrets
-  # - pulumi-operator
-  # - global-manifests/patroni-bootstrap
-  - test_cm
+  - test-secret

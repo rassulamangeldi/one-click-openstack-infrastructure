@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ingress-controller
   - external-secrets
+  - test-secret
